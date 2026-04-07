@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trắc nghiệm Văn minh Đại Việt</title>
+    <title>Câu hỏi trắc nghiệm đất nước</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -192,20 +192,25 @@
 
         /* FULLSCREEN MODE */
         body.fullscreen-mode .topbar { display:none; }
-        body.fullscreen-mode .main { padding-top:16px; max-width:100%; }
+        body.fullscreen-mode .main { padding:0; max-width:100%; height:100vh; display:flex; flex-direction:column; }
         body.fullscreen-mode .quiz-header,
-        body.fullscreen-mode .stats-row { display:none; }
-        body.fullscreen-mode .q-card { padding:36px; }
-        body.fullscreen-mode .q-text { font-size:2em; }
-        body.fullscreen-mode .options { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-        body.fullscreen-mode .option { font-size:1.6em; padding:28px 20px; justify-content:center; }
-        body.fullscreen-mode .options .option:nth-child(1){background:linear-gradient(135deg,#FFD93D,#FFA500);border-color:#FF8C00;}
-        body.fullscreen-mode .options .option:nth-child(2){background:linear-gradient(135deg,#F9ED69,#F08A5D);border-color:#E07B39;}
-        body.fullscreen-mode .options .option:nth-child(3){background:linear-gradient(135deg,#6BCF7F,#4CAF50);border-color:#388E3C;}
+        body.fullscreen-mode .stats-row,
+        body.fullscreen-mode .progress-wrap { display:none; }
+        body.fullscreen-mode #quizArea { flex:1; display:flex; flex-direction:column; height:100%; }
+        body.fullscreen-mode .q-card { flex:0 0 auto; padding:28px 40px 16px; border-radius:0; border-left:none; border-right:none; border-top:none; margin-bottom:0; box-shadow:none; }
+        body.fullscreen-mode .q-label { font-size:1em; margin-bottom:8px; }
+        body.fullscreen-mode .q-text { font-size:clamp(1.4em, 3vw, 2.4em); line-height:1.45; }
+        body.fullscreen-mode .options { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:0; margin-bottom:0; padding:0; }
+        body.fullscreen-mode .option { font-size:clamp(1.2em, 2.5vw, 2em); padding:0 28px; border-radius:0; border:none; border-top:2px solid rgba(255,255,255,0.25); justify-content:flex-start; align-items:center; min-height:0; height:100%; }
+        body.fullscreen-mode .options .option:nth-child(1){background:linear-gradient(135deg,#FFD93D,#FFA500);border-color:#FF8C00; border-top:none; border-right:1px solid rgba(255,255,255,0.3);}
+        body.fullscreen-mode .options .option:nth-child(2){background:linear-gradient(135deg,#F9ED69,#F08A5D);border-color:#E07B39; border-top:none;}
+        body.fullscreen-mode .options .option:nth-child(3){background:linear-gradient(135deg,#6BCF7F,#4CAF50);border-color:#388E3C; border-right:1px solid rgba(255,255,255,0.3);}
         body.fullscreen-mode .options .option:nth-child(4){background:linear-gradient(135deg,#6DD5FA,#2980B9);border-color:#1F5F8B;}
-        body.fullscreen-mode .options .option.correct{border-color:#00C851!important;border-width:5px!important;box-shadow:0 0 24px rgba(0,200,81,.7);}
+        body.fullscreen-mode .options .option.correct{border-color:#00C851!important;border-width:5px!important;box-shadow:inset 0 0 0 5px #00C851,0 0 24px rgba(0,200,81,.7);}
         body.fullscreen-mode .options .option.wrong{border-color:#ff4444!important;opacity:.4;}
-        body.fullscreen-mode .nav-btn { font-size:1.4em; padding:18px; }
+        body.fullscreen-mode .opt-letter { width:44px; height:44px; font-size:1.1em; flex-shrink:0; }
+        body.fullscreen-mode .nav-row { flex:0 0 auto; display:flex; gap:0; }
+        body.fullscreen-mode .nav-btn { font-size:1.2em; padding:16px; border-radius:0; }
 
         @media(max-width:520px){
             .quiz-header h1{font-size:1.4em;} .q-text{font-size:1em;}
@@ -228,8 +233,8 @@
 
 <div class="main">
     <div class="quiz-header">
-        <h1>🏛️ Bài 12: Cơ sở hình thành và quá trình phát triển của văn minh Đại Việt</h1>
-        <p>Kiểm tra kiến thức Lịch sử Việt Nam trung đại</p>
+        <h1>📖 Câu hỏi trắc nghiệm đất nước</h1>
+        <p>Kiểm tra kiến thức bài thơ Đất Nước – Nguyễn Đình Thi</p>
     </div>
     <div id="stats" class="stats-row">
         <div class="stat-card"><label>Câu hỏi</label><div class="val"><span id="currentQ">1</span>/<span id="totalQ">11</span></div></div>
@@ -339,13 +344,21 @@
 <script>
 // ─── QUESTIONS ───────────────────────────────────────────────
 const questions = [
-    {id:1,question:"Từ thế kỉ XI - XV, văn minh Đại Việt",options:["bước đầu được định hình.","phát triển mạnh mẽ và toàn diện.","có sự giao lưu với văn minh phương Tây.","có những dấu hiệu trì trệ và lạc hậu."],correct:1},
-    {id:2,question:"Trong các thế kỉ XVI - XVII, văn minh Đại Việt",options:["bước đầu được định hình.","phát triển mạnh mẽ và toàn diện.","có sự giao lưu với văn minh phương Tây.","có những dấu hiệu trì trệ và lạc hậu."],correct:2},
-    {id:3,question:"Thời kì phát triển của nền văn minh Đại Việt chấm dứt khi",options:["vua Bảo Đại thoái vị (1945), chế độ quân chủ ở Việt Nam sụp đổ.","thực dân Pháp xâm lược và thiết lập chế độ cai trị ở Việt Nam.","nhà Minh xâm lược và thiết lập ách cai trị, đô hộ ở Đại Ngu.","nhà nước Việt Nam Dân chủ Cộng hòa ra đời (2/9/1945)."],correct:1},
-    {id:4,question:"Các triều đại phong kiến ở Việt Nam đều theo thể chế chính trị nào sau đây?",options:["Quân chủ chuyên chế.","Quân chủ lập hiến.","Dân chủ chủ nô.","Dân chủ cộng hòa."],correct:0},
-    {id:5,question:"Bộ máy nhà nước quân chủ chuyên chế trung ương tập quyền của Đại Việt được hoàn chỉnh dưới triều đại nào sau đây?",options:["Lê sơ.","Tây Sơn.","Tiền Lê.","Tiền Lý."],correct:0},
-    {id:6,question:"Bộ luật nào dưới đây được ban hành dưới thời Lê sơ?",options:["Hình thư.","Hình luật.","Luật Hồng Đức.","Luật Gia Long."],correct:2},
-    {id:7,question:"Văn minh Đại Việt được phát triển trong điều kiện độc lập, tự chủ của quốc gia Đại Việt, với kinh đô chủ yếu là",options:["Thăng Long (Hà Nội).","Phú Xuân (Huế).","Hoa Lư (Ninh Bình).","Thiên Trường (Nam Định)."],correct:0}
+    {id:1,question:"Quá trình thai nghén và hoàn thiện bài thơ \"Đất nước\" mang đặc điểm nào sau đây làm nên tính độc đáo về mặt chất liệu sáng tác?",options:["Được viết liền mạch trong 8 năm (1948 - 1955) bằng những trải nghiệm chiến đấu thực tế.","Được chắt lọc cảm xúc từ nhiều mảng thơ viết ở những thời điểm khác nhau.","Được tổng hợp từ những bản hùng ca bất hủ do chính tác giả sáng tác trước đó.","Được khơi nguồn từ một mảng cảm xúc duy nhất về sự hi sinh của người lính."],correct:1},
+    {id:2,question:"Phong cách thơ ca của Nguyễn Đình Thi mang đến một làn gió mới được miêu tả như thế nào trong bài thuyết trình?",options:["Đậm chất sử thi uyên bác, bay bổng lãng mạn và tách rời hiện thực khốc liệt.","Mang tính hiện đại, giàu sức suy tưởng, hình ảnh lãng mạn nhưng hào hùng.","Đậm tính hiện thực phê phán, giàu cảm xúc bi tráng và triết lý nhân sinh.","Thiên về vẻ đẹp cổ điển, sử dụng nhiều ẩn dụ tinh tế và giọng điệu tự hào."],correct:1},
+    {id:3,question:"Tác phẩm \"Đất nước\" được đánh giá là sự kết hợp nhuần nhuyễn giữa hai yếu tố nào?",options:["Trải nghiệm khốc liệt trên chiến trường và vốn tri thức văn hóa sâu rộng.","Tính trữ tình lãng mạn bay bổng và tinh thần hiện thực phê phán sâu sắc.","Cái tôi cá nhân nhạy cảm với vận mệnh chung của toàn thể dân tộc.","Cảm hứng lịch sử hào hùng và nỗi xót xa trước những đau thương mất mát."],correct:2},
+    {id:4,question:"Theo nội dung phần Khởi động, hình ảnh đất nước yên bình và người dân hạnh phúc trong video được dùng để làm đòn bẩy nhằm nhấn mạnh thông điệp gì?",options:["Khẳng định tiềm năng to lớn trong việc phát triển du lịch của đất nước ở thời bình.","Thể hiện niềm tự hào mãnh liệt về cảnh quan thiên nhiên đa dạng từ Bắc chí Nam.","Nhấn mạnh dân ta đã phải hi sinh, đổ máu để giữ gìn, giành lại hòa bình hôm nay.","Ca ngợi sức mạnh đoàn kết vĩ đại của toàn dân tộc trong công cuộc tái thiết đất nước."],correct:2},
+    {id:5,question:"Mạch cảm xúc và giọng điệu của tác phẩm phát triển theo trình tự nào dưới đây?",options:["Đau thương → căm phẫn → hào hùng → lạc quan.","Căm phẫn → đau thương → lạc quan → hào hùng.","Đau thương → hào hùng → căm phẫn → lạc quan.","Lạc quan → đau thương → căm phẫn → hào hùng."],correct:0},
+    {id:6,question:"Câu thơ \"Xiềng xích chúng bay không khóa được / Trời đầy chim và đất đầy hoa\" được dùng để minh chứng cho luận điểm nghệ thuật nào?",options:["Sự bất lực tột cùng của kẻ thù trước vẻ đẹp vĩnh cửu của thiên nhiên đất nước.","Khát vọng tự do cháy bỏng của những người chiến sĩ cách mạng nơi ngục tù.","Tinh thần lạc quan tột độ để làm mờ đi hiện thực chiến tranh tàn khốc, đau thương.","Tinh thần không thể bị khuất phục, dù bị giam cầm con người vẫn tự do, yêu đời."],correct:3},
+    {id:7,question:"Hình ảnh \"những người áo vải\" trong đoạn thơ \"Ôm đất nước những người áo vải / Đã đứng lên thành những anh hùng\" mang ý nghĩa sâu xa gì?",options:["Sự tiên phong của lực lượng vũ trang chính quy được rèn luyện qua gian khổ.","Những con người bình dị đã đứng lên chiến đấu, trở thành lực lượng làm nên lịch sử.","Tinh thần sẵn sàng hi sinh vinh hoa phú quý của tầng lớp trí thức yêu nước.","Quá trình giác ngộ cách mạng của những người nông dân nghèo khổ dưới ách áp bức."],correct:1},
+    {id:8,question:"Cụm từ \"Rũ bùn đứng dậy sáng loà\" thể hiện khía cạnh nào ở hình tượng đất nước?",options:["Khả năng gột rửa những tàn dư của thế hệ cũ để bước sang kỷ nguyên ánh sáng.","Vẻ đẹp kỳ vĩ, tráng lệ của bức tranh thiên nhiên ngay sau một cơn bão lớn.","Sự vươn lên vô cùng mạnh mẽ, tràn đầy sức sống sau bao đau thương, chiến đấu.","Quyết tâm tái thiết và xây dựng lại cơ đồ từ hai bàn tay trắng của nhân dân ta."],correct:2},
+    {id:9,question:"Ý nghĩa cuối cùng được khẳng định trong phần Tổng kết của bài thuyết trình là gì?",options:["Kêu gọi toàn dân đồng lòng đoàn kết để lật đổ ách thống trị tàn bạo của ngoại xâm.","Khẳng định niềm tin vững chắc và lòng tự hào sâu sắc về dân tộc Việt Nam.","Bày tỏ sự xót xa vô hạn trước những hi sinh mất mát quá lớn lao của cha ông.","Phác họa lại toàn bộ chặng đường lịch sử đầy đau thương nhưng vô cùng hào hùng."],correct:1},
+    {id:10,question:"Việc sử dụng các từ ngữ như \"chảy máu\", \"nước vỡ bờ\", \"rũ bùn\" đem lại hiệu quả nghệ thuật chính nào?",options:["Gợi cảm xúc rất mạnh, khắc họa một cách rõ nét và chân thực hình ảnh đất nước.","Thể hiện sự phong phú và linh hoạt của từ vựng tiếng Việt trong thơ ca hiện đại.","Nhấn mạnh sự tàn phá khủng khiếp của thiên nhiên và bom đạn chiến tranh.","Tạo nên nhịp điệu dồn dập, gấp gáp, hối hả cho toàn bộ chỉnh thể bài thơ."],correct:0},
+    {id:11,question:"Diễn biến quá trình đấu tranh được thể hiện trong đoạn thơ \"Đất nước\" tuân theo logic nào?",options:["Đau thương → vùng lên → bất khuất → chiến thắng.","Bất khuất → đau thương → đứng lên → hồi sinh.","Đau thương → bất khuất → đứng lên → hồi sinh.","Đứng lên → đau thương → bất khuất → hồi sinh."],correct:2},
+    {id:12,question:"Bên cạnh là một nhà thơ, nhà văn, nhà soạn kịch, Nguyễn Đình Thi còn khẳng định tài năng đa dạng của mình qua lĩnh vực nào với tác phẩm \"Người Hà Nội\"?",options:["Nhà nghiên cứu lý luận văn học với những góc nhìn mang tính thời đại.","Đạo diễn sân khấu tài năng với những vở kịch cách mạng kinh điển.","Họa sĩ tài ba với những bức tranh cổ động chiến trường đầy sức sống.","Nhạc sĩ tài hoa với những bản hùng ca bất hủ trong nền âm nhạc Việt Nam."],correct:3},
+    {id:13,question:"Mục đích chính của việc trích dẫn câu thơ \"Bát cơm chan đầy nước mắt / Bay còn giằng khỏi miệng ta\" trong bài thuyết trình là để:",options:["Tố cáo tội ác kẻ thù, làm nổi bật nỗi đau tột cùng của dân tộc dưới ách áp bức.","Lên án chính sách thu mua lương thực tàn nhẫn, đẩy nhân dân vào đường cùng.","Ca ngợi sức chịu đựng phi thường của người nông dân nghèo trong hoàn cảnh khó khăn.","Phản ánh tình trạng mất mùa, thiên tai và đói kém liên miên trong thời kỳ kháng chiến."],correct:0},
+    {id:14,question:"Đặc điểm ngôn ngữ của bài thơ được nhóm 5 đánh giá có những ưu điểm nào?",options:["Hàm súc, cô đọng, mang tính triết lý nhân sinh vô cùng sâu sắc và đa nghĩa.","Phóng túng, phá cách, mạnh dạn vượt qua các khuôn khổ của thơ ca truyền thống.","Cầu kỳ, trau chuốt, sử dụng linh hoạt nhiều từ Hán Việt nhằm tạo sự trang trọng.","Giản dị, giàu hình ảnh, dễ hiểu, mang lại sự gần gũi và dễ đi vào lòng người."],correct:3},
+    {id:15,question:"Các biện pháp tu từ chủ đạo được bài thuyết trình phân tích là gì?",options:["Nhân hóa và điệp ngữ.","So sánh và ẩn dụ.","Nói quá và hoán dụ.","Liệt kê và tương phản."],correct:1}
 ];
 
 // ─── PLAYLIST ────────────────────────────────────────────────
