@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc nghiệm Văn minh Đại Việt</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f4ff;
+            --surface: #ffffff;
+            --surface2: #f5f7ff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text2: #64748b;
+            --accent: #4f46e5;
+            --accent2: #7c3aed;
+            --accent-light: #ede9fe;
+            --correct: #16a34a;
+            --correct-bg: #dcfce7;
+            --wrong: #dc2626;
+            --wrong-bg: #fee2e2;
+            --shadow: 0 4px 24px rgba(79,70,229,0.10);
+            --shadow2: 0 2px 8px rgba(0,0,0,0.07);
+            --overlay: rgba(0,0,0,0.35);
+            --card-radius: 18px;
+        }
+        [data-theme="dark"] {
+            --bg: #0f0f1a; --surface: #1a1a2e; --surface2: #16213e;
+            --border: #2d2d4e; --text: #e2e8f0; --text2: #94a3b8;
+            --accent: #818cf8; --accent2: #a78bfa; --accent-light: #1e1b4b;
+            --correct: #4ade80; --correct-bg: #052e16;
+            --wrong: #f87171; --wrong-bg: #450a0a;
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+            --shadow2: 0 2px 8px rgba(0,0,0,0.3);
+            --overlay: rgba(0,0,0,0.6);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Be Vietnam Pro',sans-serif; background:var(--bg); min-height:100vh; color:var(--text); transition:background 0.3s,color 0.3s; }
+        body::before { content:''; position:fixed; top:-200px; right:-200px; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle,rgba(79,70,229,0.12),transparent 70%); pointer-events:none; z-index:0; }
+        body::after  { content:''; position:fixed; bottom:-150px; left:-150px; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle,rgba(124,58,237,0.10),transparent 70%); pointer-events:none; z-index:0; }
+
+        /* TOPBAR */
+        .topbar { position:fixed; top:0; left:0; right:0; height:58px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; z-index:100; box-shadow:var(--shadow2); }
+        .topbar-title { font-size:1em; font-weight:700; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .topbar-right { display:flex; align-items:center; gap:10px; }
+        .icon-btn { width:38px; height:38px; border-radius:10px; border:none; background:var(--surface2); color:var(--text); font-size:1.15em; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s,transform 0.2s; }
+        .icon-btn:hover { background:var(--accent-light); transform:scale(1.07); }
+
+        /* MAIN */
+        .main { max-width:720px; margin:0 auto; padding:80px 20px 40px; position:relative; z-index:1; }
+
+        /* QUIZ HEADER */
+        .quiz-header { text-align:center; margin-bottom:28px; animation:fadeUp 0.5s ease; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .quiz-header h1 { font-size:1.8em; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:6px; }
+        .quiz-header p { color:var(--text2); font-size:0.95em; }
+
+        /* STATS */
+        .stats-row { display:flex; gap:12px; margin-bottom:20px; animation:fadeUp 0.5s ease 0.1s both; }
+        .stat-card { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px 18px; box-shadow:var(--shadow2); }
+        .stat-card label { font-size:0.75em; color:var(--text2); font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+        .stat-card .val { font-size:1.5em; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+        /* PROGRESS */
+        .progress-wrap { margin-bottom:20px; animation:fadeUp 0.5s ease 0.15s both; }
+        .progress-bar { height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
+        .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:99px; transition:width 0.5s cubic-bezier(.4,0,.2,1); }
+
+        /* QUESTION CARD */
+        .q-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--card-radius); padding:28px; box-shadow:var(--shadow); margin-bottom:18px; animation:slideIn 0.35s cubic-bezier(.4,0,.2,1); }
+        @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+        .q-label { font-size:0.78em; font-weight:700; letter-spacing:.5px; color:var(--accent); text-transform:uppercase; margin-bottom:10px; }
+        .q-text { font-size:1.15em; font-weight:600; color:var(--text); line-height:1.55; }
+
+        /* OPTIONS */
+        .options { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+        .option { background:var(--surface2); border:2px solid var(--border); border-radius:12px; padding:14px 18px; cursor:pointer; font-size:1em; font-weight:500; display:flex; align-items:center; gap:12px; transition:all 0.22s; color:var(--text); }
+        .option:hover:not(.correct):not(.wrong):not(.disabled) { border-color:var(--accent); transform:translateX(4px); box-shadow:0 2px 12px rgba(79,70,229,0.15); }
+        .opt-letter { min-width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; font-weight:700; font-size:0.9em; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .option.correct { border-color:var(--correct); background:var(--correct-bg); animation:correctPop 0.4s ease; }
+        .option.correct .opt-letter { background:var(--correct); }
+        @keyframes correctPop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+        .option.wrong { border-color:var(--wrong); background:var(--wrong-bg); opacity:0.55; cursor:not-allowed; animation:wrongShake 0.4s ease; }
+        .option.wrong .opt-letter { background:var(--wrong); }
+        @keyframes wrongShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+        .option.disabled { cursor:not-allowed; }
+
+        /* NAV BUTTONS */
+        .nav-row { display:flex; gap:12px; }
+        .nav-btn { flex:1; padding:14px; border:none; border-radius:12px; font-size:1em; font-weight:700; cursor:pointer; transition:all 0.25s; font-family:inherit; }
+        .nav-btn.prev { background:var(--surface2); border:1px solid var(--border); color:var(--text2); }
+        .nav-btn.prev:hover:not(:disabled) { background:var(--border); color:var(--text); }
+        .nav-btn.next { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; }
+        .nav-btn.next:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 18px rgba(79,70,229,0.35); }
+        .nav-btn:disabled { opacity:0.35; cursor:not-allowed; transform:none !important; }
+
+        /* FULLSCREEN BTN */
+        .fullscreen-btn { position:fixed; bottom:24px; left:24px; width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; color:white; font-size:1.1em; cursor:pointer; box-shadow:0 4px 14px rgba(79,70,229,0.45); z-index:200; display:flex; align-items:center; justify-content:center; transition:transform 0.2s; }
+        .fullscreen-btn:hover { transform:scale(1.12); }
+
+        /* RESULT */
+        .result-screen { text-align:center; animation:fadeUp 0.5s ease; }
+        .trophy-anim { font-size:5em; animation:trophyBounce 1.5s ease infinite; display:block; margin:10px 0 20px; }
+        @keyframes trophyBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+        .result-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--card-radius); padding:28px; box-shadow:var(--shadow); margin:20px 0; }
+        .result-grid { display:grid; gap:10px; }
+        .result-item { background:var(--surface2); border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:10px; font-size:0.98em; }
+        .result-item span:last-child { font-weight:700; margin-left:auto; color:var(--accent); }
+        .restart-btn { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; border:none; padding:15px 40px; font-size:1.05em; font-weight:700; border-radius:25px; cursor:pointer; font-family:inherit; transition:all 0.25s; box-shadow:0 5px 18px rgba(79,70,229,0.35); margin-top:10px; }
+        .restart-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(79,70,229,0.45); }
+
+        /* OVERLAY */
+        .overlay { position:fixed; inset:0; background:var(--overlay); backdrop-filter:blur(4px); z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+        .overlay.active { opacity:1; pointer-events:all; }
+        .popup { background:var(--surface); border:1px solid var(--border); border-radius:20px; width:100%; max-width:400px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.25); transform:scale(0.92); transition:transform 0.25s; }
+        .overlay.active .popup { transform:scale(1); }
+        .popup-header { display:flex; align-items:center; gap:10px; padding:20px 20px 0; position:sticky; top:0; background:var(--surface); z-index:1; border-radius:20px 20px 0 0; }
+        .popup-back-btn { width:34px; height:34px; border-radius:9px; border:none; background:var(--surface2); color:var(--text); font-size:1em; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s; flex-shrink:0; }
+        .popup-back-btn:hover { background:var(--accent-light); }
+        .popup-title { font-size:1.1em; font-weight:700; color:var(--text); flex:1; }
+        .popup-body { padding:16px 20px 20px; }
+
+        /* SETTINGS */
+        .settings-list { display:flex; flex-direction:column; gap:8px; }
+        .settings-item { display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:all 0.2s; color:var(--text); font-size:0.98em; font-weight:500; }
+        .settings-item:hover { border-color:var(--accent); background:var(--accent-light); }
+        .settings-item .s-icon { font-size:1.3em; width:32px; text-align:center; }
+        .settings-item .s-arrow { margin-left:auto; color:var(--text2); }
+
+        /* THEME */
+        .theme-list { display:flex; flex-direction:column; gap:10px; }
+        .theme-item { display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--surface2); border:2px solid var(--border); border-radius:12px; cursor:pointer; transition:all 0.2s; color:var(--text); font-size:0.98em; font-weight:600; }
+        .theme-item:hover { border-color:var(--accent); }
+        .theme-item.active { border-color:var(--accent); background:var(--accent-light); }
+        .theme-dot { width:36px; height:36px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; }
+        .theme-dot.light { background:linear-gradient(135deg,#f0f4ff,#fff); }
+        .theme-dot.dark  { background:linear-gradient(135deg,#0f0f1a,#1a1a2e); }
+        .theme-check { margin-left:auto; font-size:1.1em; color:var(--accent); display:none; }
+        .theme-item.active .theme-check { display:block; }
+
+        /* MUSIC PLAYER */
+        .now-playing { background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:14px; padding:18px; color:white; margin-bottom:16px; display:flex; align-items:center; gap:14px; }
+        .album-art { width:56px; height:56px; border-radius:10px; background:rgba(255,255,255,0.25); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.8em; }
+        .album-art.playing .vinyl { animation:spin 3s linear infinite; display:block; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .vinyl { display:block; }
+
+        /* Marquee */
+        .track-info { flex:1; min-width:0; overflow:hidden; }
+        .track-name-wrap { overflow:hidden; white-space:nowrap; }
+        .track-name { font-weight:700; font-size:0.95em; display:inline-block; white-space:nowrap; }
+        .track-name.marquee { animation:marqueeScroll 14s linear infinite; }
+        @keyframes marqueeScroll { 0%,20%{transform:translateX(0)} 80%,100%{transform:translateX(calc(-100% + 120px))} }
+        .track-artist { font-size:0.8em; opacity:0.8; margin-top:2px; }
+        .track-num { font-size:0.72em; opacity:0.65; margin-top:1px; }
+
+        /* Controls */
+        .seek-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; font-size:0.78em; color:var(--text2); }
+
+        /* Custom range – rebuilt for correctness */
+        .range-wrap { flex:1; position:relative; height:20px; display:flex; align-items:center; }
+        .range-track { position:absolute; left:0; right:0; height:4px; border-radius:99px; background:var(--border); pointer-events:none; }
+        .range-fill { position:absolute; left:0; height:4px; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent2)); pointer-events:none; width:0%; }
+        .range-fill.instant { transition:none !important; }
+        .range-input { position:absolute; left:0; right:0; width:100%; height:20px; -webkit-appearance:none; appearance:none; background:transparent; cursor:pointer; outline:none; margin:0; z-index:2; }
+        .range-input::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--accent); box-shadow:0 2px 6px rgba(79,70,229,0.5); cursor:pointer; }
+        .range-input::-moz-range-thumb { width:14px; height:14px; border-radius:50%; background:var(--accent); border:none; cursor:pointer; }
+        .vol-wrap .range-fill { background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+        .vol-wrap .range-input::-webkit-slider-thumb { background:var(--accent2); }
+        .vol-wrap .range-input::-moz-range-thumb { background:var(--accent2); }
+
+        .volume-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+        .vol-icon { font-size:1.1em; color:var(--text2); width:20px; text-align:center; }
+        .vol-label { font-size:0.78em; color:var(--text2); min-width:28px; text-align:right; }
+
+        .play-row { display:flex; justify-content:center; gap:12px; align-items:center; }
+        .play-btn { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; color:white; font-size:1.3em; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(79,70,229,0.35); }
+        .play-btn:hover { transform:scale(1.08); }
+        .side-btn { width:38px; height:38px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-size:1em; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+        .side-btn:hover { background:var(--accent-light); border-color:var(--accent); }
+
+        /* MINI PLAYER */
+        .mini-player { position:fixed; bottom:24px; right:24px; background:var(--surface); border:1px solid var(--border); border-radius:50px; padding:8px 16px 8px 10px; display:flex; align-items:center; gap:10px; box-shadow:var(--shadow); cursor:pointer; z-index:200; transition:all 0.2s; max-width:230px; overflow:hidden; }
+        .mini-player:hover { transform:translateY(-2px); }
+        .mini-icon { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:0.9em; color:white; flex-shrink:0; }
+        .mini-icon.playing { animation:pulseRing 1.5s ease infinite; }
+        @keyframes pulseRing { 0%,100%{box-shadow:0 0 0 0 rgba(79,70,229,0.5)} 50%{box-shadow:0 0 0 6px rgba(79,70,229,0)} }
+        .mini-text-wrap { flex:1; overflow:hidden; white-space:nowrap; }
+        .mini-text { font-size:0.75em; font-weight:600; color:var(--text); display:inline-block; white-space:nowrap; }
+        .mini-text.marquee { animation:marqueeScroll 12s linear infinite; }
+
+        /* FULLSCREEN MODE */
+        body.fullscreen-mode .topbar { display:none; }
+        body.fullscreen-mode .main { padding-top:16px; max-width:100%; }
+        body.fullscreen-mode .quiz-header,
+        body.fullscreen-mode .stats-row { display:none; }
+        body.fullscreen-mode .q-card { padding:36px; }
+        body.fullscreen-mode .q-text { font-size:2em; }
+        body.fullscreen-mode .options { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        body.fullscreen-mode .option { font-size:1.6em; padding:28px 20px; justify-content:center; }
+        body.fullscreen-mode .options .option:nth-child(1){background:linear-gradient(135deg,#FFD93D,#FFA500);border-color:#FF8C00;}
+        body.fullscreen-mode .options .option:nth-child(2){background:linear-gradient(135deg,#F9ED69,#F08A5D);border-color:#E07B39;}
+        body.fullscreen-mode .options .option:nth-child(3){background:linear-gradient(135deg,#6BCF7F,#4CAF50);border-color:#388E3C;}
+        body.fullscreen-mode .options .option:nth-child(4){background:linear-gradient(135deg,#6DD5FA,#2980B9);border-color:#1F5F8B;}
+        body.fullscreen-mode .options .option.correct{border-color:#00C851!important;border-width:5px!important;box-shadow:0 0 24px rgba(0,200,81,.7);}
+        body.fullscreen-mode .options .option.wrong{border-color:#ff4444!important;opacity:.4;}
+        body.fullscreen-mode .nav-btn { font-size:1.4em; padding:18px; }
+
+        @media(max-width:520px){
+            .quiz-header h1{font-size:1.4em;} .q-text{font-size:1em;}
+            .option{font-size:0.92em;padding:12px 14px;} .stats-row{gap:8px;}
+            .stat-card{padding:10px 12px;} .stat-card .val{font-size:1.3em;}
+        }
+        @media(min-width:900px){
+            .q-text{font-size:1.25em;} .option{font-size:1.05em;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <span class="topbar-title">🎓 Trắc nghiệm Lịch sử</span>
+    <div class="topbar-right">
+        <button class="icon-btn" id="settingsBtn" title="Cài đặt">⚙️</button>
+    </div>
+</div>
+
+<div class="main">
+    <div class="quiz-header">
+        <h1>🏛️ Bài 12: Cơ sở hình thành và quá trình phát triển của văn minh Đại Việt</h1>
+        <p>Kiểm tra kiến thức Lịch sử Việt Nam trung đại</p>
+    </div>
+    <div id="stats" class="stats-row">
+        <div class="stat-card"><label>Câu hỏi</label><div class="val"><span id="currentQ">1</span>/<span id="totalQ">11</span></div></div>
+        <div class="stat-card"><label>Thời gian</label><div class="val" id="timer">00:00</div></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="progress"></div></div></div>
+    <div id="quizArea"></div>
+</div>
+
+<button class="fullscreen-btn" id="fullscreenBtn" title="Toàn màn hình">⛶</button>
+
+<div class="mini-player" id="miniPlayer" title="Mở trình phát nhạc">
+    <div class="mini-icon" id="miniIcon">🎵</div>
+    <div class="mini-text-wrap"><span class="mini-text" id="miniText">Đang tải nhạc...</span></div>
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div class="overlay" id="overlaySettings">
+    <div class="popup">
+        <div class="popup-header">
+            <div class="popup-title">⚙️ Cài đặt</div>
+            <button class="popup-back-btn" id="closeSettings">✕</button>
+        </div>
+        <div class="popup-body">
+            <div class="settings-list">
+                <div class="settings-item" id="openTheme"><span class="s-icon">🎨</span><span>Chủ đề giao diện</span><span class="s-arrow">›</span></div>
+                <div class="settings-item" id="openMusic"><span class="s-icon">🎵</span><span>Trình phát nhạc</span><span class="s-arrow">›</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- THEME OVERLAY -->
+<div class="overlay" id="overlayTheme">
+    <div class="popup">
+        <div class="popup-header">
+            <button class="popup-back-btn" id="backFromTheme">←</button>
+            <div class="popup-title">🎨 Chủ đề giao diện</div>
+        </div>
+        <div class="popup-body">
+            <div class="theme-list">
+                <div class="theme-item active" data-theme="light">
+                    <div class="theme-dot light"></div>
+                    <div><div style="font-weight:700;">Sáng</div><div style="font-size:0.8em;color:var(--text2);">Nền trắng sạch sẽ</div></div>
+                    <span class="theme-check">✓</span>
+                </div>
+                <div class="theme-item" data-theme="dark">
+                    <div class="theme-dot dark"></div>
+                    <div><div style="font-weight:700;">Tối</div><div style="font-size:0.8em;color:var(--text2);">Nền tối dễ nhìn</div></div>
+                    <span class="theme-check">✓</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MUSIC OVERLAY -->
+<div class="overlay" id="overlayMusic">
+    <div class="popup">
+        <div class="popup-header">
+            <button class="popup-back-btn" id="backFromMusic">←</button>
+            <div class="popup-title">🎵 Trình phát nhạc</div>
+        </div>
+        <div class="popup-body">
+            <div class="music-player">
+                <div class="now-playing">
+                    <div class="album-art" id="albumArt"><span class="vinyl">💿</span></div>
+                    <div class="track-info">
+                        <div class="track-name-wrap"><span class="track-name" id="trackName">Đang tải...</span></div>
+                        <div class="track-artist" id="trackArtist">GitHub Hosted</div>
+                        <div class="track-num" id="trackNum">1 / 3</div>
+                    </div>
+                </div>
+                <div class="player-controls">
+                    <div class="seek-row">
+                        <span id="curTime">0:00</span>
+                        <div class="range-wrap">
+                            <div class="range-track"></div>
+                            <div class="range-fill" id="seekFill"></div>
+                            <input type="range" class="range-input" id="seekBar" min="0" max="10000" value="0" step="1">
+                        </div>
+                        <span id="durTime">0:00</span>
+                    </div>
+                    <div class="volume-row">
+                        <span class="vol-icon" id="volIcon">🔉</span>
+                        <div class="range-wrap vol-wrap">
+                            <div class="range-track"></div>
+                            <div class="range-fill" id="volFill"></div>
+                            <input type="range" class="range-input" id="volBar" min="0" max="100" value="15" step="1">
+                        </div>
+                        <span class="vol-label" id="volLabel">15</span>
+                    </div>
+                    <div class="play-row">
+                        <button class="side-btn" id="btnPrev" title="Bài trước">⏮</button>
+                        <button class="play-btn" id="btnPlay">▶</button>
+                        <button class="side-btn" id="btnNext" title="Bài tiếp">⏭</button>
+                        <button class="side-btn" id="btnMute" title="Tắt tiếng">🔇</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<audio id="audioPlayer" preload="auto"></audio>
+
+<script>
+// ─── QUESTIONS ───────────────────────────────────────────────
+const questions = [
+    {id:1,question:"Từ thế kỉ XI - XV, văn minh Đại Việt",options:["bước đầu được định hình.","phát triển mạnh mẽ và toàn diện.","có sự giao lưu với văn minh phương Tây.","có những dấu hiệu trì trệ và lạc hậu."],correct:1},
+    {id:2,question:"Trong các thế kỉ XVI - XVII, văn minh Đại Việt",options:["bước đầu được định hình.","phát triển mạnh mẽ và toàn diện.","có sự giao lưu với văn minh phương Tây.","có những dấu hiệu trì trệ và lạc hậu."],correct:2},
+    {id:3,question:"Thời kì phát triển của nền văn minh Đại Việt chấm dứt khi",options:["vua Bảo Đại thoái vị (1945), chế độ quân chủ ở Việt Nam sụp đổ.","thực dân Pháp xâm lược và thiết lập chế độ cai trị ở Việt Nam.","nhà Minh xâm lược và thiết lập ách cai trị, đô hộ ở Đại Ngu.","nhà nước Việt Nam Dân chủ Cộng hòa ra đời (2/9/1945)."],correct:1},
+    {id:4,question:"Các triều đại phong kiến ở Việt Nam đều theo thể chế chính trị nào sau đây?",options:["Quân chủ chuyên chế.","Quân chủ lập hiến.","Dân chủ chủ nô.","Dân chủ cộng hòa."],correct:0},
+    {id:5,question:"Bộ máy nhà nước quân chủ chuyên chế trung ương tập quyền của Đại Việt được hoàn chỉnh dưới triều đại nào sau đây?",options:["Lê sơ.","Tây Sơn.","Tiền Lê.","Tiền Lý."],correct:0},
+    {id:6,question:"Bộ luật nào dưới đây được ban hành dưới thời Lê sơ?",options:["Hình thư.","Hình luật.","Luật Hồng Đức.","Luật Gia Long."],correct:2},
+    {id:7,question:"Văn minh Đại Việt được phát triển trong điều kiện độc lập, tự chủ của quốc gia Đại Việt, với kinh đô chủ yếu là",options:["Thăng Long (Hà Nội).","Phú Xuân (Huế).","Hoa Lư (Ninh Bình).","Thiên Trường (Nam Định)."],correct:0}
+];
+
+// ─── PLAYLIST ────────────────────────────────────────────────
+const playlist = [
+    {
+        name:"Phép Màu Lofi Ver (Đàn Cá Gỗ OST) - MAYDAYs ft. Minh Tốc [ KAZE Remix ]",
+        artist:"MAYDAYs ft. Minh Tốc",
+        url:"https://github.com/tru897tr/Soundhosting/raw/refs/heads/main/Ph%C3%A9p%20M%C3%A0u%20Lofi%20Ver%20(%C4%90%C3%A0n%20C%C3%A1%20G%E1%BB%97%20OST)%20-%20MAYDAYs%20ft.%20Minh%20T%E1%BB%91c%20%5B%20KAZE%20Remix%20%5D.mp3"
+    },
+    {
+        name:"puppy & @Dangrangto - Wrong Times (Shrimp remix)",
+        artist:"puppy & Dangrangto",
+        url:"https://github.com/tru897tr/Soundhosting/raw/refs/heads/main/puppy%20&%20@Dangrangto%20-%20Wrong%20Times%20(Shrimp%20remix%20).mp3"
+    },
+    {
+        name:"Bạn Đời - KARIK",
+        artist:"KARIK",
+        url:"https://github.com/tru897tr/Soundhosting/raw/refs/heads/main/B%E1%BA%A1n%20%C4%90%E1%BB%9Di.mp3"
+    }
+];
+
+// ─── QUIZ STATE ───────────────────────────────────────────────
+let curQ = 0, startTime = Date.now(), timerInterval, qStartTime = Date.now();
+let timePQ = [], answers = {}, shuffled = [];
+
+function initQ() {
+    shuffled = questions.map(q => {
+        const idx=[0,1,2,3];
+        for(let i=3;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+        return {...q, options:idx.map(i=>q.options[i]), correct:idx.indexOf(q.correct)};
+    });
+}
+
+function startTimer() {
+    timerInterval = setInterval(()=>{
+        const e=Math.floor((Date.now()-startTime)/1000);
+        document.getElementById('timer').textContent = String(Math.floor(e/60)).padStart(2,'0')+':'+String(e%60).padStart(2,'0');
+    },1000);
+}
+
+function displayQ() {
+    const q=shuffled[curQ], ua=answers[curQ];
+    document.getElementById('currentQ').textContent=curQ+1;
+    document.getElementById('totalQ').textContent=questions.length;
+    document.getElementById('progress').style.width=(curQ/questions.length*100)+'%';
+    let html='';
+    for(let i=0;i<q.options.length;i++){
+        let cls='option', click=true;
+        if(ua){
+            if(i===q.correct) cls+=' correct';
+            if(ua.wrong&&ua.wrong.includes(i)) cls+=' wrong';
+            if(ua.done){cls+=' disabled';click=false;}
+        }
+        html+=`<div class="${cls}" ${click?'onclick="checkA('+i+')"':''}><span class="opt-letter">${String.fromCharCode(65+i)}</span><span class="opt-text">${q.options[i]}</span></div>`;
+    }
+    const done=ua&&ua.done;
+    document.getElementById('quizArea').innerHTML=`
+        <div class="q-card"><div class="q-label">Câu ${curQ+1} / ${questions.length}</div><div class="q-text">${q.question}</div></div>
+        <div class="options">${html}</div>
+        <div class="nav-row">
+            <button class="nav-btn prev" onclick="prevQ()" ${curQ===0?'disabled':''}>← Quay lại</button>
+            <button class="nav-btn next" onclick="nextQ()" ${!done?'disabled':''}>${curQ===questions.length-1?'Kết thúc ✓':'Tiếp tục →'}</button>
+        </div>`;
+}
+
+function checkA(sel){
+    const q=shuffled[curQ], ua=answers[curQ]||{wrong:[]};
+    if(ua.done||ua.wrong.includes(sel)) return;
+    const opts=document.querySelectorAll('.option');
+    if(sel===q.correct){
+        opts[sel].classList.add('correct');
+        timePQ[curQ]=Math.floor((Date.now()-qStartTime)/1000);
+        answers[curQ]={...ua,done:true};
+        opts.forEach(o=>o.classList.add('disabled'));
+        document.querySelector('.nav-btn.next').disabled=false;
+    } else {
+        opts[sel].classList.add('wrong');
+        ua.wrong.push(sel);
+        answers[curQ]=ua;
+        opts[sel].style.pointerEvents='none';
+    }
+}
+function prevQ(){if(curQ>0){curQ--;displayQ();}}
+function nextQ(){
+    if(curQ<questions.length-1){curQ++;qStartTime=Date.now();displayQ();}
+    else showResults();
+}
+function showResults(){
+    clearInterval(timerInterval);
+    const t=Math.floor((Date.now()-startTime)/1000),m=Math.floor(t/60),s=t%60;
+    const v=timePQ.filter(x=>x!==undefined);
+    const avg=v.length?Math.floor(v.reduce((a,b)=>a+b,0)/v.length):0;
+    document.getElementById('stats').style.display='none';
+    document.querySelector('.progress-wrap').style.display='none';
+    document.getElementById('quizArea').innerHTML=`
+        <div class="result-screen">
+            <span class="trophy-anim">🏆</span>
+            <h2 style="font-size:1.8em;font-weight:800;margin-bottom:8px;">Chúc mừng!</h2>
+            <p style="color:var(--text2);margin-bottom:20px;">Bạn đã hoàn thành bài trắc nghiệm Văn Lang – Âu Lạc</p>
+            <div class="result-card">
+                <div style="font-weight:700;color:var(--accent);margin-bottom:14px;">📊 Thống kê chi tiết</div>
+                <div class="result-grid">
+                    <div class="result-item">⏱️ Tổng thời gian <span>${m} phút ${s} giây</span></div>
+                    <div class="result-item">📈 Thời gian TB/câu <span>${avg} giây</span></div>
+                    <div class="result-item">⚡ Câu nhanh nhất <span>${v.length?Math.min(...v):0} giây</span></div>
+                    <div class="result-item">🐢 Câu chậm nhất <span>${v.length?Math.max(...v):0} giây</span></div>
+                    <div class="result-item">✅ Tổng số câu <span>${questions.length} câu</span></div>
+                </div>
+            </div>
+            <button class="restart-btn" onclick="location.reload()">🔄 Làm lại bài test</button>
+        </div>`;
+}
+
+// ─── FULLSCREEN ───────────────────────────────────────────────
+document.getElementById('fullscreenBtn').addEventListener('click',()=>{
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen&&document.exitFullscreen();
+});
+document.addEventListener('fullscreenchange',()=>{
+    document.body.classList.toggle('fullscreen-mode',!!document.fullscreenElement);
+    document.getElementById('stats').style.display=document.fullscreenElement?'none':'flex';
+});
+
+// ─── OVERLAYS ────────────────────────────────────────────────
+const openOv=id=>document.getElementById(id).classList.add('active');
+const closeOv=id=>document.getElementById(id).classList.remove('active');
+document.getElementById('settingsBtn').onclick=()=>openOv('overlaySettings');
+document.getElementById('closeSettings').onclick=()=>closeOv('overlaySettings');
+document.getElementById('openTheme').onclick=()=>{closeOv('overlaySettings');openOv('overlayTheme');};
+document.getElementById('openMusic').onclick=()=>{closeOv('overlaySettings');openOv('overlayMusic');};
+document.getElementById('backFromTheme').onclick=()=>{closeOv('overlayTheme');openOv('overlaySettings');};
+document.getElementById('backFromMusic').onclick=()=>{closeOv('overlayMusic');openOv('overlaySettings');};
+['overlaySettings','overlayTheme','overlayMusic'].forEach(id=>{
+    document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeOv(id);});
+});
+document.getElementById('miniPlayer').onclick=()=>openOv('overlayMusic');
+
+// ─── THEME ───────────────────────────────────────────────────
+let curTheme=localStorage.getItem('theme')||'light';
+function applyTheme(t){
+    curTheme=t;
+    document.documentElement.setAttribute('data-theme',t);
+    localStorage.setItem('theme',t);
+    document.querySelectorAll('.theme-item').forEach(el=>el.classList.toggle('active',el.dataset.theme===t));
+}
+applyTheme(curTheme);
+document.querySelectorAll('.theme-item').forEach(el=>el.onclick=()=>applyTheme(el.dataset.theme));
+
+// ─── AUDIO PLAYER ────────────────────────────────────────────
+const audio = document.getElementById('audioPlayer');
+let trackIdx = 0;
+let isPlaying = false;
+let isMuted = false;
+let vol = 15;         // 0-100
+let isSeeking = false;
+let rafId = null;
+
+const seekBar  = document.getElementById('seekBar');
+const seekFill = document.getElementById('seekFill');
+const volBar   = document.getElementById('volBar');
+const volFill  = document.getElementById('volFill');
+
+function fmtTime(s){
+    if(!isFinite(s)||isNaN(s)) return '0:00';
+    s=Math.floor(s);
+    return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;
+}
+
+// Sync fill width from a 0-100 value, instantly or smoothly
+function syncFill(fillEl, pct, instant){
+    if(instant) fillEl.classList.add('instant');
+    else fillEl.classList.remove('instant');
+    fillEl.style.width = Math.max(0,Math.min(100,pct))+'%';
+}
+
+// RAF loop for seek bar (avoids timeupdate lag)
+function startRAF(){
+    if(rafId) cancelAnimationFrame(rafId);
+    function tick(){
+        if(!isSeeking && audio.duration && isFinite(audio.duration)){
+            const pct = audio.currentTime / audio.duration * 100;
+            syncFill(seekFill, pct, true); // instant while playing
+            seekBar.value = Math.round(pct * 100); // 0-10000
+            document.getElementById('curTime').textContent = fmtTime(audio.currentTime);
+        }
+        rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+}
+function stopRAF(){ if(rafId){cancelAnimationFrame(rafId);rafId=null;} }
+
+function setVol(v, skipBar){
+    vol = Math.max(0,Math.min(100,v));
+    audio.volume = vol/100;
+    if(!skipBar){ volBar.value=vol; }
+    syncFill(volFill, vol, true);
+    document.getElementById('volLabel').textContent = vol;
+    document.getElementById('volIcon').textContent = vol===0?'🔇':vol<40?'🔉':'🔊';
+}
+
+function updatePlayBtn(){ document.getElementById('btnPlay').textContent = isPlaying?'⏸':'▶'; }
+function updateMiniUI(){
+    const mi=document.getElementById('miniIcon');
+    const aa=document.getElementById('albumArt');
+    if(isPlaying){ mi.classList.add('playing'); aa.classList.add('playing'); }
+    else { mi.classList.remove('playing'); aa.classList.remove('playing'); }
+}
+
+function checkMarquee(){
+    requestAnimationFrame(()=>{
+        const tn=document.getElementById('trackName');
+        const mt=document.getElementById('miniText');
+        tn.classList.toggle('marquee', tn.scrollWidth > tn.parentElement.clientWidth+4);
+        mt.classList.toggle('marquee', mt.scrollWidth > mt.parentElement.clientWidth+4);
+    });
+}
+
+function loadTrack(idx, play){
+    trackIdx = ((idx % playlist.length) + playlist.length) % playlist.length;
+    const t = playlist[trackIdx];
+    audio.src = t.url;
+    audio.volume = vol/100;
+    audio.load();
+
+    // Reset UI
+    seekBar.value = 0;
+    syncFill(seekFill, 0, true);
+    document.getElementById('curTime').textContent='0:00';
+    document.getElementById('durTime').textContent='0:00';
+    document.getElementById('trackName').textContent = t.name;
+    document.getElementById('miniText').textContent = t.name;
+    document.getElementById('trackArtist').textContent = t.artist;
+    document.getElementById('trackNum').textContent = (trackIdx+1)+' / '+playlist.length;
+    checkMarquee();
+
+    if(play){
+        audio.play().then(()=>{ isPlaying=true; updatePlayBtn(); updateMiniUI(); startRAF(); }).catch(()=>{});
+    }
+}
+
+// Audio events
+audio.addEventListener('loadedmetadata',()=>{
+    document.getElementById('durTime').textContent=fmtTime(audio.duration);
+});
+audio.addEventListener('play',()=>{ isPlaying=true; updatePlayBtn(); updateMiniUI(); startRAF(); });
+audio.addEventListener('pause',()=>{ isPlaying=false; updatePlayBtn(); updateMiniUI(); });
+audio.addEventListener('ended',()=>{ loadTrack(trackIdx+1, true); });
+audio.addEventListener('error',()=>{ setTimeout(()=>loadTrack(trackIdx+1,isPlaying),1500); });
+
+// SEEK
+seekBar.addEventListener('pointerdown',()=>{ isSeeking=true; seekFill.classList.add('instant'); });
+window.addEventListener('pointerup',()=>{
+    if(isSeeking){
+        isSeeking=false;
+        seekFill.classList.remove('instant');
+        if(audio.duration && isFinite(audio.duration)){
+            audio.currentTime=(seekBar.value/10000)*audio.duration;
+        }
+    }
+});
+seekBar.addEventListener('input',()=>{
+    const pct=seekBar.value/100; // 0-100
+    syncFill(seekFill, pct, true);
+    if(audio.duration && isFinite(audio.duration)){
+        document.getElementById('curTime').textContent=fmtTime((pct/100)*audio.duration);
+    }
+});
+
+// VOLUME
+volBar.addEventListener('input',()=>{ setVol(parseInt(volBar.value), true); isMuted=false; });
+
+// BUTTONS
+document.getElementById('btnPlay').onclick=()=>{
+    if(isPlaying) audio.pause();
+    else audio.play().catch(()=>{});
+};
+document.getElementById('btnPrev').onclick=()=>loadTrack(trackIdx-1,true);
+document.getElementById('btnNext').onclick=()=>loadTrack(trackIdx+1,true);
+document.getElementById('btnMute').onclick=()=>{
+    isMuted=!isMuted;
+    audio.volume=isMuted?0:vol/100;
+    document.getElementById('btnMute').textContent=isMuted?'🔈':'🔇';
+    document.getElementById('volIcon').textContent=isMuted?'🔇':(vol<40?'🔉':'🔊');
+};
+
+// ─── INIT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+    initQ(); displayQ(); startTimer();
+    setVol(15); volBar.value=15;
+    loadTrack(0, false);
+
+    // Autoplay attempt chain
+    function tryPlay(){
+        audio.play().then(()=>{
+            document.removeEventListener('click',tryPlay,true);
+            document.removeEventListener('keydown',tryPlay,true);
+            document.removeEventListener('touchstart',tryPlay,true);
+        }).catch(()=>{});
+    }
+    // Try immediately (works if browser allows)
+    tryPlay();
+    // Fallback: first interaction
+    document.addEventListener('click',tryPlay,true);
+    document.addEventListener('keydown',tryPlay,true);
+    document.addEventListener('touchstart',tryPlay,{capture:true,passive:true});
+});
+</script>
+</body>
+</html>
